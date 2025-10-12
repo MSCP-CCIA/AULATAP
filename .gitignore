@@ -1,33 +1,9 @@
-# Dart / Flutter
 .dart_tool/
 .packages
 .pub/
 build/
-.flutter-plugins
-.flutter-plugins-dependencies
 
-# Android
-android/.gradle/
-android/local.properties
-android/**/GeneratedPluginRegistrant.java
-android/app/*.keystore
-android/app/key.properties
 
-# iOS / macOS
-ios/Pods/
-ios/Flutter/Generated.xcconfig
-ios/Runner/GeneratedPluginRegistrant.*
-macos/Pods/
-macos/Flutter/GeneratedPluginRegistrant.*
 
-# Windows / Linux
-windows/Runner/GeneratedPluginRegistrant.*
-linux/flutter/ephemeral/
 
-# IDE
-.vscode/
-.idea/
-*.iml
 
-# Sistema
-.DS_Store
