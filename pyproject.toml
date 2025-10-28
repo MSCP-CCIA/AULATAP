@@ -1,0 +1,22 @@
+[project]
+name = "aulatap"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Manuel Castro",email = "manuel.castro01@correo.usa.edu.co"}
+]
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "alembic (>=1.17.0,<2.0.0)",
+    "sqlalchemy (>=2.0.44,<3.0.0)",
+    "psycopg2-binary (>=2.9.11,<3.0.0)",
+    "fastapi (>=0.120.1,<0.121.0)",
+    "uvicorn[standard] (>=0.38.0,<0.39.0)",
+    "pydantic (>=2.12.3,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
