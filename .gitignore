@@ -121,3 +121,4 @@ app.*.symbols
 .idea
 vockey.pem
 scripts.sh
+/backend/.env
