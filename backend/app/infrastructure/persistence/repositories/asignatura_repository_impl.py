@@ -1,0 +1,39 @@
+"""
+Implementación Concreta del Repositorio de Asignaturas usando SQLAlchemy.
+"""
+
+from typing import Optional, List
+import uuid
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domain.entities.asignatura import Asignatura, AsignaturaCreate
+from app.domain.repositories.asignatura_repository import IAsignaturaRepository
+from app.infrastructure.persistence.models.asignatura import Asignatura as AsignaturaModel
+
+class AsignaturaRepositoryImpl(IAsignaturaRepository):
+    """Implementación de IAsignaturaRepository con SQLAlchemy."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def get_by_id(self, asignatura_id: uuid.UUID) -> Optional[Asignatura]:
+        result = await self.session.get(AsignaturaModel, asignatura_id)
+        return Asignatura.model_validate(result) if result else None
+
+    async def list_by_docente(self, docente_id: uuid.UUID) -> List[Asignatura]:
+        stmt = select(AsignaturaModel).where(AsignaturaModel.id_docente == docente_id).order_by(AsignaturaModel.nombre_materia)
+        result = await self.session.execute(stmt)
+        db_asignaturas = result.scalars().all()
+        return [Asignatura.model_validate(a) for a in db_asignaturas]
+
+    async def create(self, asignatura_create: AsignaturaCreate) -> Asignatura:
+        db_asignatura = AsignaturaModel(
+            nombre_materia=asignatura_create.nombre_materia,
+            grupo=asignatura_create.grupo,
+            id_docente=asignatura_create.id_docente
+        )
+        self.session.add(db_asignatura)
+        await self.session.flush()
+        await self.session.refresh(db_asignatura)
+        return Asignatura.model_validate(db_asignatura)
