@@ -6,19 +6,19 @@ Define la forma de los datos que usa la lógica de negocio.
 
 import uuid
 from pydantic import BaseModel, EmailStr, Field
-
+from typing import Optional
 
 class UsuarioBase(BaseModel):
     """Modelo base para Usuario con campos comunes."""
     email: EmailStr
     nombre_completo: str = Field(..., max_length=50)
+    rol: str = Field("docente", max_length=20)
 
 
 class Usuario(UsuarioBase):
     """Modelo completo de la entidad Usuario (leído desde la DB)."""
     id: uuid.UUID
 
-    # Hacemos que se pueda leer desde objetos SQLAlchemy (ORM)
     class Config:
         from_attributes = True
 
@@ -26,6 +26,13 @@ class Usuario(UsuarioBase):
 class UsuarioCreate(UsuarioBase):
     """Modelo para crear un nuevo Usuario (requiere password)."""
     password: str = Field(..., min_length=8)
+
+
+class UsuarioUpdate(BaseModel):
+    """Modelo para actualizar un Usuario existente."""
+    email: Optional[EmailStr] = None
+    nombre_completo: Optional[str] = Field(None, max_length=50)
+    rol: Optional[str] = Field(None, max_length=20)
 
 
 class UsuarioPublic(UsuarioBase):

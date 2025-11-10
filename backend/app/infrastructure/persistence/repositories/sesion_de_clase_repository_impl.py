@@ -38,7 +38,8 @@ class SesionDeClaseRepositoryImpl(ISesionDeClaseRepository):
             id_clase=sesion_create.id_clase,
             id_horario=sesion_create.id_horario,
             hora_inicio=datetime.utcnow(),
-            estado=EstadoSesion.EN_PROGRESO
+            estado=EstadoSesion.EN_PROGRESO,
+            tema=sesion_create.tema
         )
         self.session.add(db_sesion)
         await self.session.flush()

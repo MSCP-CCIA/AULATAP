@@ -1,3 +1,7 @@
+"""
+Modelo SQLAlchemy para SesionDeClase.
+Refleja la tabla en la base de datos.
+"""
 import enum
 import datetime
 from sqlalchemy import (
@@ -17,18 +21,18 @@ class SesionDeClase(Base):
     __tablename__ = "SesionDeClase"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+
+    # --- NUEVO CAMPO ---
+    tema: Mapped[Optional[str]] = mapped_column(VARCHAR(100), nullable=True)
+
+    # --- CAMPOS ORIGINALES ---
     hora_inicio: Mapped[datetime.datetime] = mapped_column(TIMESTAMP)
-    hora_fin: Mapped[Optional[datetime.datetime]] = mapped_column(
-        TIMESTAMP, nullable=True
-    )
+    hora_fin: Mapped[Optional[datetime.datetime]] = mapped_column(TIMESTAMP, nullable=True)
     estado: Mapped[EstadoSesion] = mapped_column(
         Enum(EstadoSesion), default=EstadoSesion.EnProgreso
     )
 
-    # --- NOTA IMPORTANTE DE DISEÑO ---
-    # El diagrama muestra una relación 1-N desde ClaseProgramada,
-    # que tiene una clave compuesta (id_clase, id_horario).
-    # Por lo tanto, esta tabla DEBE tener ambos FKs.
+    # Clave compuesta para integridad con ClaseProgramada
     id_clase: Mapped[int] = mapped_column()
     id_horario: Mapped[int] = mapped_column()
 
@@ -39,12 +43,10 @@ class SesionDeClase(Base):
         ),
     )
 
-    # Relación N-1 con ClaseProgramada
+    # Relaciones
     clase_programada: Mapped["ClaseProgramada"] = relationship(
         "ClaseProgramada", back_populates="sesiones"
     )
-
-    # Relación 1-N con RegistroAsistencia
     asistencias: Mapped[List["RegistroAsistencia"]] = relationship(
         "RegistroAsistencia", back_populates="sesion_de_clase"
     )

@@ -24,3 +24,13 @@ class IAsignaturaRepository(ABC):
     async def create(self, asignatura_create: AsignaturaCreate) -> Asignatura:
         """Crea una nueva asignatura."""
         pass
+
+    @abstractmethod
+    async def esta_estudiante_inscrito(self, id_asignatura: uuid.UUID, id_estudiante: uuid.UUID) -> bool:
+        """Verifica si un estudiante está inscrito en una asignatura."""
+        pass
+
+    @abstractmethod
+    async def existe_clase_programada(self, id_asignatura: uuid.UUID, id_horario: uuid.UUID) -> bool:
+        """Verifica si una asignatura está programada en un horario."""
+        pass

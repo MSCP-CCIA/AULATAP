@@ -37,4 +37,11 @@ class RegistroAsistenciaCreate(BaseModel):
     """Modelo para el 'tap' de asistencia."""
     id_sesion_clase: uuid.UUID
     id_estudiante: uuid.UUID
-    hora_entrada: datetime
+    hora_registro: datetime = Field(default_factory=datetime.utcnow)
+    estado_asistencia: EstadoAsistencia
+
+
+class RegistroAsistenciaUpdate(BaseModel):
+    """Modelo para actualizar un registro de asistencia."""
+    hora_salida: Optional[datetime] = None
+    estado_asistencia: Optional[EstadoAsistencia] = None

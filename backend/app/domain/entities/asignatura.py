@@ -4,7 +4,10 @@ Define la entidad de negocio 'Asignatura' (Clase).
 
 import uuid
 from pydantic import BaseModel, Field
+from typing import Optional
 
+
+# --- TU CÓDIGO ---
 
 class AsignaturaBase(BaseModel):
     """Modelo base para Asignatura."""
@@ -24,3 +27,20 @@ class Asignatura(AsignaturaBase):
 class AsignaturaCreate(AsignaturaBase):
     """Modelo para crear una nueva Asignatura."""
     pass
+
+
+class AsignaturaPublic(BaseModel):
+    """
+    DTO público para retornar al cliente.
+    (Oculta el id_docente si no es necesario)
+    """
+    id: uuid.UUID
+    nombre_materia: str
+    grupo: str
+
+    # Si quisieras incluir al docente, lo anidarías aquí
+    # docente: Optional[UsuarioPublic] = None
+
+    class Config:
+        from_attributes = True
+

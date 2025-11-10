@@ -22,6 +22,7 @@ class SesionDeClaseBase(BaseModel):
     hora_inicio: datetime
     hora_fin: Optional[datetime] = None
     estado: EstadoSesion = Field(default=EstadoSesion.EN_PROGRESO)
+    tema: Optional[str] = Field(None, max_length=100, description="Tema de la sesión de clase")
 
 
 class SesionDeClase(SesionDeClaseBase):
@@ -36,9 +37,11 @@ class SesionDeClaseCreate(BaseModel):
     """Modelo para crear una nueva SesionDeClase."""
     id_clase: uuid.UUID
     id_horario: uuid.UUID
+    tema: Optional[str] = Field(None, max_length=100, description="Tema de la sesión de clase")
 
 
 class SesionDeClaseUpdate(BaseModel):
     """Modelo para actualizar una SesionDeClase (ej. cerrarla)."""
     estado: Optional[EstadoSesion] = None
     hora_fin: Optional[datetime] = None
+    tema: Optional[str] = Field(None, max_length=100, description="Tema de la sesión de clase")

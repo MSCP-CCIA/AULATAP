@@ -6,10 +6,13 @@ from typing import Optional, List
 import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import exists
 
 from app.domain.entities.asignatura import Asignatura, AsignaturaCreate
 from app.domain.repositories.asignatura_repository import IAsignaturaRepository
 from app.infrastructure.persistence.models.asignatura import Asignatura as AsignaturaModel
+from app.infrastructure.persistence.models.inscripcion import Inscripcion as InscripcionModel
+from app.infrastructure.persistence.models.clase_programada import ClaseProgramada as ClaseProgramadaModel
 
 class AsignaturaRepositoryImpl(IAsignaturaRepository):
     """Implementación de IAsignaturaRepository con SQLAlchemy."""
@@ -37,3 +40,21 @@ class AsignaturaRepositoryImpl(IAsignaturaRepository):
         await self.session.flush()
         await self.session.refresh(db_asignatura)
         return Asignatura.model_validate(db_asignatura)
+
+    async def esta_estudiante_inscrito(self, id_asignatura: uuid.UUID, id_estudiante: uuid.UUID) -> bool:
+        """Verifica si un estudiante está inscrito en una asignatura."""
+        stmt = select(exists().where(
+            InscripcionModel.id_clase == id_asignatura,
+            InscripcionModel.id_estudiante == id_estudiante
+        ))
+        result = await self.session.execute(stmt)
+        return result.scalar() is True
+
+    async def existe_clase_programada(self, id_asignatura: uuid.UUID, id_horario: uuid.UUID) -> bool:
+        """Verifica si una asignatura está programada en un horario."""
+        stmt = select(exists().where(
+            ClaseProgramadaModel.id_clase == id_asignatura,
+            ClaseProgramadaModel.id_horario == id_horario
+        ))
+        result = await self.session.execute(stmt)
+        return result.scalar() is True
