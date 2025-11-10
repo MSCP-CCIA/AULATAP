@@ -14,7 +14,7 @@ class Usuario(Base):
     # --- ADVERTENCIA ---
     # VARCHAR(50) es MUY corto para un password hash.
     # Se recomienda al menos 128 o 255.
-    password_hash: Mapped[str] = mapped_column(VARCHAR(50))
+    password_hash: Mapped[str] = mapped_column(VARCHAR(150))
 
     # Relación: 1-a-Muchos con Asignatura
     asignaturas_impartidas: Mapped[List["Asignatura"]] = relationship(

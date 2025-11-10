@@ -34,11 +34,11 @@ class UsuarioRepositoryImpl(IUsuarioRepository):
         db_user = UsuarioModel(
             email=usuario_create.email,
             nombre_completo=usuario_create.nombre_completo,
-            hashed_password=hashed_password,
-            rol=usuario_create.rol
+            password_hash=hashed_password,
         )
         self.session.add(db_user)
         await self.session.flush()
+        await self.session.commit()
         await self.session.refresh(db_user)
         return Usuario.model_validate(db_user)
 
