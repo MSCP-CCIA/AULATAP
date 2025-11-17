@@ -23,3 +23,8 @@ class IInscripcionRepository(ABC):
     async def list_by_estudiante(self, id_estudiante: int) -> List[Inscripcion]:
         """Lista todas las inscripciones de un estudiante."""
         pass
+
+    @abstractmethod
+    async def find_by_asignatura(self, id_asignatura: int) -> List[Inscripcion]:
+        """Busca todas las inscripciones para una asignatura."""
+        pass

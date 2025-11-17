@@ -51,3 +51,10 @@ class InscripcionRepositoryImpl(IInscripcionRepository):
         result = await self.session.execute(stmt)
         db_inscripciones = result.scalars().all()
         return [Inscripcion.model_validate(i) for i in db_inscripciones]
+
+    async def find_by_asignatura(self, id_asignatura: int) -> List[Inscripcion]:
+        """Busca todas las inscripciones para una asignatura."""
+        stmt = select(InscripcionModel).where(InscripcionModel.id_clase == id_asignatura)
+        result = await self.session.execute(stmt)
+        db_inscripciones = result.scalars().all()
+        return [Inscripcion.model_validate(i) for i in db_inscripciones]

@@ -14,6 +14,8 @@ from .clase_programada_schemas import ClaseProgramadaPublic
 # Enum para los estados de la sesión (reutilizado de la entidad)
 class EstadoSesion(str, enum.Enum):
     EN_PROGRESO = "EnProgreso"
+    VALIDACION_ABIERTA = "ValidacionAbierta"
+    VALIDACION_CERRADA = "ValidacionCerrada"
     CERRADA = "Cerrada"
 
 

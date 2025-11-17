@@ -14,6 +14,8 @@ from typing import Optional, List
 
 class EstadoSesion(enum.Enum):
     EnProgreso = "EnProgreso"
+    ValidacionAbierta = "ValidacionAbierta"
+    ValidacionCerrada = "ValidacionCerrada"
     Cerrada = "Cerrada"
 
 
@@ -29,7 +31,7 @@ class SesionDeClase(Base):
     hora_inicio: Mapped[datetime.datetime] = mapped_column(TIMESTAMP)
     hora_fin: Mapped[Optional[datetime.datetime]] = mapped_column(TIMESTAMP, nullable=True)
     estado: Mapped[EstadoSesion] = mapped_column(
-        Enum(EstadoSesion), default=EstadoSesion.EnProgreso
+        Enum(EstadoSesion, name="estadosesion", create_type=False), default=EstadoSesion.EnProgreso
     )
 
     # Clave compuesta para integridad con ClaseProgramada

@@ -7,10 +7,14 @@ from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, Field
 
+from app.domain.entities.clase_programada import ClaseProgramada
+
 
 class EstadoSesion(str, enum.Enum):
     """Define los estados posibles de una sesión."""
     EN_PROGRESO = "EnProgreso"
+    VALIDACION_ABIERTA = "ValidacionAbierta"
+    VALIDACION_CERRADA = "ValidacionCerrada"
     CERRADA = "Cerrada"
 
 
@@ -27,6 +31,7 @@ class SesionDeClaseBase(BaseModel):
 class SesionDeClase(SesionDeClaseBase):
     """Modelo completo de la entidad SesionDeClase."""
     id: int
+    clase_programada: ClaseProgramada
 
     class Config:
         from_attributes = True
