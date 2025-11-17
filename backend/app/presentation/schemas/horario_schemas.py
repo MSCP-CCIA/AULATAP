@@ -3,7 +3,6 @@
 Schemas para la entidad Horario, utilizados en la API.
 """
 
-import uuid
 import datetime
 import enum
 from pydantic import BaseModel, Field, field_validator, ValidationInfo
@@ -50,7 +49,7 @@ class HorarioUpdate(BaseModel):
 
 # Schema para la respuesta pública de un Horario
 class HorarioPublic(HorarioBase):
-    id: uuid.UUID
+    id: int
 
     class Config:
         from_attributes = True

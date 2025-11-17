@@ -2,7 +2,6 @@
 Define la entidad de negocio 'RegistroAsistencia'.
 """
 
-import uuid
 import enum
 from datetime import datetime
 from typing import Optional
@@ -18,8 +17,8 @@ class EstadoAsistencia(str, enum.Enum):
 
 class RegistroAsistenciaBase(BaseModel):
     """Modelo base para RegistroAsistencia."""
-    id_sesion_clase: uuid.UUID
-    id_estudiante: uuid.UUID
+    id_sesion_clase: int
+    id_estudiante: int
     hora_entrada: Optional[datetime] = None
     hora_salida: Optional[datetime] = None
     estado_asistencia: EstadoAsistencia = Field(default=EstadoAsistencia.AUSENTE)
@@ -27,7 +26,7 @@ class RegistroAsistenciaBase(BaseModel):
 
 class RegistroAsistencia(RegistroAsistenciaBase):
     """Modelo completo de la entidad RegistroAsistencia."""
-    id: uuid.UUID
+    id: int
 
     class Config:
         from_attributes = True
@@ -35,8 +34,8 @@ class RegistroAsistencia(RegistroAsistenciaBase):
 
 class RegistroAsistenciaCreate(BaseModel):
     """Modelo para el 'tap' de asistencia."""
-    id_sesion_clase: uuid.UUID
-    id_estudiante: uuid.UUID
+    id_sesion_clase: int
+    id_estudiante: int
     hora_registro: datetime = Field(default_factory=datetime.utcnow)
     estado_asistencia: EstadoAsistencia
 

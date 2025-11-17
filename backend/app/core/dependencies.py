@@ -3,8 +3,7 @@ Dependencies Module
 FastAPI dependencies para autenticación, autorización e inyección de servicios.
 """
 
-from typing import Dict, Any
-from uuid import UUID
+from typing import Dict, Any, Optional
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,52 +11,47 @@ from app.core.database import get_db
 from app.core.security import get_token_payload, extract_user_id_from_token, oauth2_scheme
 from app.core.exceptions import UnauthorizedException, ForbiddenException
 
+from app.domain.entities.usuario import Usuario
+from app.domain.repositories.usuario_repository import IUsuarioRepository
+from app.infrastructure.persistence.repositories.usuario_repository_impl import UsuarioRepositoryImpl
 
-# Imports necesarios de domain/infrastructure (ajustar según tu estructura)
-# --- TEMPORALMENTE COMENTADO PARA PRUEBAS ---
-# from app.domain.entities.professor import Professor
-# from app.infrastructure.persistence.repositories.professor_repository_impl import ProfessorRepositoryImpl
 
 # ==================== USER AUTHENTICATION ====================
 
+async def get_usuario_repository(db: AsyncSession = Depends(get_db)) -> IUsuarioRepository:
+    """Inyecta UsuarioRepository."""
+    return UsuarioRepositoryImpl(db)
+
+
 async def get_current_user(
         token_payload: Dict[str, Any] = Depends(get_token_payload),
-        db: AsyncSession = Depends(get_db)
-):  # -> Professor:  <-- Temporalmente comentado
+        usuario_repo: IUsuarioRepository = Depends(get_usuario_repository)
+) -> Usuario:
     """
     Dependency que retorna el usuario autenticado actual.
     """
     user_id = extract_user_id_from_token(token_payload)
 
-    # --- TEMPORALMENTE COMENTADO PARA PRUEBAS ---
-    # professor_repo = ProfessorRepositoryImpl(db)
-    # professor = await professor_repo.get_by_id(user_id)
-    #
-    # if not professor:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_404_NOT_FOUND,
-    #         detail="User not found"
-    #     )
-    #
-    # return professor
+    user = await usuario_repo.get_by_id(user_id)
 
-    # --- Temporalmente retornamos el ID para que la app no se rompa ---
-    print(f"Mock get_current_user: ID {user_id}")
-    return {"user_id": user_id}
+    if not user:
+        raise UnauthorizedException(detail="User not found")
+
+    return user
 
 
 async def get_current_active_user(
-        current_user=Depends(get_current_user)  # : Professor = Depends(get_current_user) <-- Temporal
-):  # -> Professor:
+        current_user: Usuario = Depends(get_current_user)
+) -> Usuario:
     """
     Dependency que verifica que el usuario esté activo.
+    NOTA: Actualmente, la entidad Usuario no tiene un campo 'is_active'.
+    Esta dependencia simplemente retorna el usuario autenticado.
+    Si se añade un campo 'is_active' en el futuro, se debería implementar aquí.
     """
-    # --- TEMPORALMENTE COMENTADO PARA PRUEBAS ---
     # if not current_user.is_active:
     #     raise ForbiddenException(detail="Inactive user")
-    #
-    # return current_user
-    print(f"Mock get_current_active_user: {current_user}")
+
     return current_user
 
 

@@ -3,8 +3,7 @@ Implementación Concreta del Repositorio de Inscripciones usando SQLAlchemy.
 """
 
 from datetime import date
-import uuid
-from typing import Optional
+from typing import Optional, List
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -36,7 +35,7 @@ class InscripcionRepositoryImpl(IInscripcionRepository):
             fecha_inscripcion=db_inscripcion.fecha_inscripcion
         )
 
-    async def get_by_asignatura_and_estudiante(self, id_asignatura: uuid.UUID, id_estudiante: uuid.UUID) -> Optional[Inscripcion]:
+    async def get_by_asignatura_and_estudiante(self, id_asignatura: int, id_estudiante: int) -> Optional[Inscripcion]:
         """Obtiene una inscripción por ID de asignatura y estudiante."""
         stmt = select(InscripcionModel).where(
             InscripcionModel.id_clase == id_asignatura,
@@ -45,3 +44,10 @@ class InscripcionRepositoryImpl(IInscripcionRepository):
         result = await self.session.execute(stmt)
         db_inscripcion = result.scalars().first()
         return Inscripcion.model_validate(db_inscripcion) if db_inscripcion else None
+
+    async def list_by_estudiante(self, id_estudiante: int) -> List[Inscripcion]:
+        """Lista todas las inscripciones de un estudiante."""
+        stmt = select(InscripcionModel).where(InscripcionModel.id_estudiante == id_estudiante)
+        result = await self.session.execute(stmt)
+        db_inscripciones = result.scalars().all()
+        return [Inscripcion.model_validate(i) for i in db_inscripciones]

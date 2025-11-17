@@ -3,7 +3,6 @@
 Schemas para la entidad SesionDeClase, utilizados en la API.
 """
 
-import uuid
 import enum
 from datetime import datetime
 from typing import Optional
@@ -20,13 +19,13 @@ class EstadoSesion(str, enum.Enum):
 
 # Schema base para SesionDeClase
 class SesionDeClaseBase(BaseModel):
-    id_clase_programada: uuid.UUID = Field(..., description="ID de la clase programada (asignatura + horario)")
+    id_clase_programada: int = Field(..., description="ID de la clase programada (asignatura + horario)", example=1)
     tema: Optional[str] = Field(None, max_length=100, description="Tema de la sesión de clase", example="Introducción a las Derivadas")
 
 
 # Schema para la creación de una SesionDeClase (ej. al abrir una sesión)
 class SesionDeClaseCreate(BaseModel):
-    id_clase_programada: uuid.UUID
+    id_clase_programada: int
     tema: Optional[str] = Field(None, max_length=100, description="Tema de la sesión de clase")
 
 
@@ -36,9 +35,16 @@ class SesionDeClaseUpdate(BaseModel):
     tema: Optional[str] = Field(None, max_length=100, description="Tema de la sesión de clase")
 
 
+# Schema para la petición de abrir una sesión
+class AbrirSesionRequest(BaseModel):
+    id_asignatura: int = Field(..., description="ID de la asignatura a la que pertenece la sesión")
+    id_horario: int = Field(..., description="ID del horario en el que se programa la sesión")
+    tema: Optional[str] = Field(None, max_length=100, description="Tema opcional para la sesión")
+
+
 # Schema para la respuesta pública de una SesionDeClase
 class SesionDeClasePublic(BaseModel):
-    id: uuid.UUID
+    id: int
     hora_inicio: datetime
     hora_fin: Optional[datetime] = None
     estado: EstadoSesion

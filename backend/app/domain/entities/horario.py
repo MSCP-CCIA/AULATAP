@@ -2,7 +2,6 @@
 Define la entidad de negocio 'Horario'.
 """
 
-import uuid
 import datetime
 import enum
 from pydantic import BaseModel, Field, field_validator, ValidationInfo
@@ -32,7 +31,7 @@ class HorarioBase(BaseModel):
 
 class Horario(HorarioBase):
     """Modelo completo de la entidad Horario."""
-    id: uuid.UUID
+    id: int
 
     class Config:
         from_attributes = True

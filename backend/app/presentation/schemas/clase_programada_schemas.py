@@ -3,7 +3,6 @@
 Schemas para la entidad ClaseProgramada (asociación entre Asignatura y Horario), utilizados en la API.
 """
 
-import uuid
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -13,8 +12,8 @@ from .horario_schemas import HorarioPublic
 
 # Schema base para ClaseProgramada
 class ClaseProgramadaBase(BaseModel):
-    id_asignatura: uuid.UUID = Field(..., example=uuid.uuid4())
-    id_horario: uuid.UUID = Field(..., example=uuid.uuid4())
+    id_asignatura: int = Field(..., example=1)
+    id_horario: int = Field(..., example=1)
 
 
 # Schema para la creación de una ClaseProgramada

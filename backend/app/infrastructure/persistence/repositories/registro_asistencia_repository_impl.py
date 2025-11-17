@@ -3,7 +3,6 @@ Implementación Concreta del Repositorio de Asistencia usando SQLAlchemy.
 """
 
 from typing import Optional, List
-import uuid
 from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,11 +18,11 @@ class RegistroAsistenciaRepositoryImpl(IRegistroAsistenciaRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_id(self, registro_id: uuid.UUID) -> Optional[RegistroAsistencia]:
+    async def get_by_id(self, registro_id: int) -> Optional[RegistroAsistencia]:
         result = await self.session.get(AsistenciaModel, registro_id)
         return RegistroAsistencia.model_validate(result) if result else None
 
-    async def get_by_sesion_and_estudiante(self, sesion_id: uuid.UUID, estudiante_id: uuid.UUID) -> Optional[RegistroAsistencia]:
+    async def get_by_sesion_and_estudiante(self, sesion_id: int, estudiante_id: int) -> Optional[RegistroAsistencia]:
         stmt = select(AsistenciaModel).where(
             AsistenciaModel.id_sesion_clase == sesion_id,
             AsistenciaModel.id_estudiante == estudiante_id
@@ -44,7 +43,7 @@ class RegistroAsistenciaRepositoryImpl(IRegistroAsistenciaRepository):
         await self.session.refresh(db_registro)
         return RegistroAsistencia.model_validate(db_registro)
 
-    async def update(self, registro_id: uuid.UUID, registro_update: RegistroAsistenciaUpdate) -> Optional[RegistroAsistencia]:
+    async def update(self, registro_id: int, registro_update: RegistroAsistenciaUpdate) -> Optional[RegistroAsistencia]:
         db_registro = await self.session.get(AsistenciaModel, registro_id)
         if not db_registro:
             return None
@@ -57,7 +56,7 @@ class RegistroAsistenciaRepositoryImpl(IRegistroAsistenciaRepository):
         await self.session.refresh(db_registro)
         return RegistroAsistencia.model_validate(db_registro)
 
-    async def list_by_sesion(self, sesion_id: uuid.UUID) -> List[RegistroAsistencia]:
+    async def list_by_sesion(self, sesion_id: int) -> List[RegistroAsistencia]:
         stmt = select(AsistenciaModel).where(AsistenciaModel.id_sesion_clase == sesion_id)
         result = await self.session.execute(stmt)
         db_registros = result.scalars().all()

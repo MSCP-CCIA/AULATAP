@@ -3,7 +3,6 @@
 Schemas para la entidad Estudiante, utilizados en la API.
 """
 
-import uuid
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 
@@ -29,7 +28,7 @@ class EstudianteUpdate(BaseModel):
 
 # Schema para la respuesta pública de un Estudiante
 class EstudiantePublic(EstudianteBase):
-    id: uuid.UUID
+    id: int
 
     class Config:
         from_attributes = True

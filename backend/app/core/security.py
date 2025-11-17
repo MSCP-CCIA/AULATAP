@@ -7,8 +7,8 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, status, Security
+from fastapi.security import OAuth2PasswordBearer, APIKeyHeader
 from uuid import UUID
 
 from app.core.config import settings
@@ -16,9 +16,6 @@ from app.core.exceptions import UnauthorizedException
 
 # ==================== PASSWORD HASHING ====================
 
-# SOLUCIÓN TEMPORAL: Cambiamos 'bcrypt' por 'plaintext' para evitar
-# el error de carga del backend en tu entorno.
-# ¡RECUERDA CAMBIARLO A ["bcrypt"] ANTES DE IR A PRODUCCIÓN!
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 
@@ -188,7 +185,7 @@ oauth2_scheme = OAuth2PasswordBearer(
 )
 
 
-async def get_token_payload(token: str = Depends(oauth2_scheme)) -> Dict[str, Any]:
+async def get_token_payload(token: str = Security(oauth2_scheme)) -> Dict[str, Any]:
     """
     Dependency para extraer y validar el payload del JWT.
 
@@ -204,9 +201,23 @@ async def get_token_payload(token: str = Depends(oauth2_scheme)) -> Dict[str, An
     return decode_access_token(token)
 
 
+# ==================== API KEY AUTHENTICATION ====================
+
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=True)
+
+async def get_api_key(api_key: str = Security(api_key_header)):
+    """
+    Dependency que valida la API Key en el header.
+    """
+    if api_key != settings.API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid or missing API Key"
+        )
+
 # ==================== HELPER FUNCTIONS ====================
 
-def extract_user_id_from_token(payload: Dict[str, Any]) -> UUID:
+def extract_user_id_from_token(payload: Dict[str, Any]) -> int:
     """
     Extrae el user ID del payload del token.
 
@@ -214,19 +225,19 @@ def extract_user_id_from_token(payload: Dict[str, Any]) -> UUID:
         payload: Payload decodificado del JWT
 
     Returns:
-        UUID del usuario
+        int del usuario
 
     Raises:
-        UnauthorizedException: Si no hay 'sub' en el payload
+        UnauthorizedException: Si no hay 'sub' en el payload o no es un int válido
     """
     user_id_str = payload.get("sub")
     if not user_id_str:
         raise UnauthorizedException(detail="Token missing 'sub' claim")
 
     try:
-        return UUID(user_id_str)
+        return int(user_id_str)
     except ValueError:
-        raise UnauthorizedException(detail="Invalid user ID format in token")
+        raise UnauthorizedException(detail="Invalid user ID format in token (not an integer)")
 
 
 def check_token_permission(payload: Dict[str, Any], required_permission: str) -> None:

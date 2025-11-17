@@ -2,14 +2,13 @@
 Define la entidad de negocio 'Inscripcion'.
 """
 
-import uuid
 from datetime import date
 from pydantic import BaseModel, Field
 
 class InscripcionBase(BaseModel):
     """Modelo base para Inscripcion."""
-    id_clase: uuid.UUID
-    id_estudiante: uuid.UUID
+    id_clase: int
+    id_estudiante: int
 
 class Inscripcion(InscripcionBase):
     """Modelo completo de la entidad Inscripcion."""

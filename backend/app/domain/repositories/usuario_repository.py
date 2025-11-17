@@ -6,14 +6,13 @@ implementación concreta (SQLAlchemy).
 
 from abc import ABC, abstractmethod
 from typing import Optional, List
-import uuid
 from app.domain.entities.usuario import Usuario, UsuarioCreate, UsuarioUpdate
 
 class IUsuarioRepository(ABC):
     """Interfaz abstracta para el repositorio de usuarios."""
 
     @abstractmethod
-    async def get_by_id(self, usuario_id: uuid.UUID) -> Optional[Usuario]:
+    async def get_by_id(self, usuario_id: int) -> Optional[Usuario]:
         """Obtiene un usuario por su ID."""
         pass
 
@@ -28,7 +27,7 @@ class IUsuarioRepository(ABC):
         pass
 
     @abstractmethod
-    async def update(self, usuario_id: uuid.UUID, usuario_update: UsuarioUpdate) -> Optional[Usuario]:
+    async def update(self, usuario_id: int, usuario_update: UsuarioUpdate) -> Optional[Usuario]:
         """Actualiza un usuario existente."""
         pass
 

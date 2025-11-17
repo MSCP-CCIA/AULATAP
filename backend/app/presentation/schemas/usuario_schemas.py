@@ -3,7 +3,6 @@
 Schemas para la entidad Usuario, utilizados en la API.
 """
 
-import uuid
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 
@@ -28,7 +27,7 @@ class UsuarioUpdate(BaseModel):
 
 # Schema para representar al Usuario tal como está en la base de datos (incluye el hashed_password)
 class UsuarioInDB(UsuarioBase):
-    id: uuid.UUID
+    id: int
     password_hash: str
 
     class Config:
@@ -37,7 +36,7 @@ class UsuarioInDB(UsuarioBase):
 
 # Schema para la respuesta pública (lo que se devuelve al cliente)
 class UsuarioPublic(UsuarioBase):
-    id: uuid.UUID
+    id: int
 
     class Config:
         from_attributes = True

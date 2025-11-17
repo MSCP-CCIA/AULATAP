@@ -3,7 +3,6 @@ Implementación Concreta del Repositorio de Asignaturas usando SQLAlchemy.
 """
 
 from typing import Optional, List
-import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import exists
@@ -20,11 +19,11 @@ class AsignaturaRepositoryImpl(IAsignaturaRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_id(self, asignatura_id: uuid.UUID) -> Optional[Asignatura]:
+    async def get_by_id(self, asignatura_id: int) -> Optional[Asignatura]:
         result = await self.session.get(AsignaturaModel, asignatura_id)
         return Asignatura.model_validate(result) if result else None
 
-    async def list_by_docente(self, docente_id: uuid.UUID) -> List[Asignatura]:
+    async def list_by_docente(self, docente_id: int) -> List[Asignatura]:
         stmt = select(AsignaturaModel).where(AsignaturaModel.id_docente == docente_id).order_by(AsignaturaModel.nombre_materia)
         result = await self.session.execute(stmt)
         db_asignaturas = result.scalars().all()
@@ -41,7 +40,7 @@ class AsignaturaRepositoryImpl(IAsignaturaRepository):
         await self.session.refresh(db_asignatura)
         return Asignatura.model_validate(db_asignatura)
 
-    async def esta_estudiante_inscrito(self, id_asignatura: uuid.UUID, id_estudiante: uuid.UUID) -> bool:
+    async def esta_estudiante_inscrito(self, id_asignatura: int, id_estudiante: int) -> bool:
         """Verifica si un estudiante está inscrito en una asignatura."""
         stmt = select(exists().where(
             InscripcionModel.id_clase == id_asignatura,
@@ -50,11 +49,20 @@ class AsignaturaRepositoryImpl(IAsignaturaRepository):
         result = await self.session.execute(stmt)
         return result.scalar() is True
 
-    async def existe_clase_programada(self, id_asignatura: uuid.UUID, id_horario: uuid.UUID) -> bool:
+    async def existe_clase_programada(self, id_asignatura: int, id_horario: int) -> bool:
         """Verifica si una asignatura está programada en un horario."""
         stmt = select(exists().where(
             ClaseProgramadaModel.id_clase == id_asignatura,
             ClaseProgramadaModel.id_horario == id_horario
+        ))
+        result = await self.session.execute(stmt)
+        return result.scalar() is True
+
+    async def docente_owns_asignatura(self, docente_id: int, asignatura_id: int) -> bool:
+        """Verifica si un docente es dueño de una asignatura."""
+        stmt = select(exists().where(
+            AsignaturaModel.id == asignatura_id,
+            AsignaturaModel.id_docente == docente_id
         ))
         result = await self.session.execute(stmt)
         return result.scalar() is True

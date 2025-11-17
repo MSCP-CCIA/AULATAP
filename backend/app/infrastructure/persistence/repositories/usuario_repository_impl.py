@@ -3,7 +3,6 @@ Implementación Concreta del Repositorio de Usuarios usando SQLAlchemy.
 """
 
 from typing import Optional, List
-import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,7 +18,7 @@ class UsuarioRepositoryImpl(IUsuarioRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_id(self, usuario_id: uuid.UUID) -> Optional[Usuario]:
+    async def get_by_id(self, usuario_id: int) -> Optional[Usuario]:
         result = await self.session.get(UsuarioModel, usuario_id)
         return Usuario.model_validate(result) if result else None
 
@@ -42,7 +41,7 @@ class UsuarioRepositoryImpl(IUsuarioRepository):
         await self.session.refresh(db_user)
         return Usuario.model_validate(db_user)
 
-    async def update(self, usuario_id: uuid.UUID, usuario_update: UsuarioUpdate) -> Optional[Usuario]:
+    async def update(self, usuario_id: int, usuario_update: UsuarioUpdate) -> Optional[Usuario]:
         db_user = await self.session.get(UsuarioModel, usuario_id)
         if not db_user:
             return None

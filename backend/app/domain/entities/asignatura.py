@@ -2,7 +2,6 @@
 Define la entidad de negocio 'Asignatura' (Clase).
 """
 
-import uuid
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -13,12 +12,12 @@ class AsignaturaBase(BaseModel):
     """Modelo base para Asignatura."""
     nombre_materia: str = Field(..., max_length=50)
     grupo: str = Field(..., max_length=50)
-    id_docente: uuid.UUID
+    id_docente: int
 
 
 class Asignatura(AsignaturaBase):
     """Modelo completo de la entidad Asignatura."""
-    id: uuid.UUID
+    id: int
 
     class Config:
         from_attributes = True
@@ -34,7 +33,7 @@ class AsignaturaPublic(BaseModel):
     DTO público para retornar al cliente.
     (Oculta el id_docente si no es necesario)
     """
-    id: uuid.UUID
+    id: int
     nombre_materia: str
     grupo: str
 

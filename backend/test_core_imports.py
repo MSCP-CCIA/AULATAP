@@ -1,7 +1,7 @@
 """
 Script para probar que todos los módulos del 'core' se importan
 y configuran correctamente, incluyendo la conexión a la base de datos
-y la carga del .env
+y la carga del ..env
 """
 
 import asyncio
@@ -37,7 +37,7 @@ async def main():
         import sqlalchemy
         print("    -> OK. SQLAlchemy importado (no hay conflicto con 'logger').\n")
 
-        # 1. Importar Config (Esto carga y valida el .env)
+        # 1. Importar Config (Esto carga y valida el ..env)
         print("1. Importando config...")
         from app.core.config import settings
 
@@ -120,7 +120,7 @@ async def main():
 
 
 if __name__ == "__main__":
-    # Asegurarse de que el túnel SSH esté activo y .env esté en 'backend/'
-    print("Recordatorio: Asegúrate de que tu túnel SSH esté activo y tu .env esté en la carpeta 'backend'.")
+    # Asegurarse de que el túnel SSH esté activo y ..env esté en 'backend/'
+    print("Recordatorio: Asegúrate de que tu túnel SSH esté activo y tu ..env esté en la carpeta 'backend'.")
     asyncio.run(main())
 

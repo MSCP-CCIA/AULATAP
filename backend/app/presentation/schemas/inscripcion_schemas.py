@@ -3,7 +3,6 @@
 Schemas para la entidad Inscripcion (asociación entre Asignatura y Estudiante), utilizados en la API.
 """
 
-import uuid
 from datetime import date
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -14,8 +13,8 @@ from .estudiante_schemas import EstudiantePublic
 
 # Schema base para Inscripcion
 class InscripcionBase(BaseModel):
-    id_asignatura: uuid.UUID = Field(..., example=uuid.uuid4())
-    id_estudiante: uuid.UUID = Field(..., example=uuid.uuid4())
+    id_asignatura: int = Field(..., example=1)
+    id_estudiante: int = Field(..., example=1)
 
 
 # Schema para la creación de una Inscripcion

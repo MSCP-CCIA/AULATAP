@@ -4,7 +4,6 @@ Define la Interfaz (un contrato abstracto) para el Repositorio de Estudiantes.
 
 from abc import ABC, abstractmethod
 from typing import Optional, List
-import uuid
 from app.domain.entities.estudiante import Estudiante, EstudianteCreate
 
 
@@ -12,7 +11,7 @@ class IEstudianteRepository(ABC):
     """Interfaz abstracta para el repositorio de estudiantes."""
 
     @abstractmethod
-    async def get_by_id(self, estudiante_id: uuid.UUID) -> Optional[Estudiante]:
+    async def get_by_id(self, estudiante_id: int) -> Optional[Estudiante]:
         """Obtiene un estudiante por su ID."""
         pass
 

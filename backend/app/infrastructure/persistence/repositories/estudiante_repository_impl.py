@@ -3,7 +3,6 @@ Implementación Concreta del Repositorio de Estudiantes usando SQLAlchemy.
 """
 
 from typing import Optional, List
-import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,7 +16,7 @@ class EstudianteRepositoryImpl(IEstudianteRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_id(self, estudiante_id: uuid.UUID) -> Optional[Estudiante]:
+    async def get_by_id(self, estudiante_id: int) -> Optional[Estudiante]:
         result = await self.session.get(EstudianteModel, estudiante_id)
         return Estudiante.model_validate(result) if result else None
 

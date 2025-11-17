@@ -1,63 +1,69 @@
 """
-Caso de Uso: Abrir una nueva Sesión de Clase.
+Caso de Uso: Abrir una Sesión de Clase.
 """
-import uuid
-from datetime import datetime
-from app.domain.entities.sesion_de_clase import SesionDeClase, SesionDeClaseCreate, EstadoSesion
+
+from app.domain.entities.sesion_de_clase import SesionDeClase, SesionDeClaseCreate
+from app.domain.entities.clase_programada import ClaseProgramada # New import
 from app.domain.repositories.sesion_de_clase_repository import ISesionDeClaseRepository
 from app.domain.repositories.asignatura_repository import IAsignaturaRepository
-from app.core.exceptions import NotFoundException, ValidationException, UnauthorizedException
+from app.domain.repositories.clase_programada_repository import IClaseProgramadaRepository
+from app.core.exceptions import ForbiddenException, NotFoundException, ValidationException
 
 
 class AbrirSesionUseCase:
-    """Encapsula la lógica para abrir una sesión."""
+    """
+    Clase que encapsula la lógica para abrir una sesión de clase.
+    """
 
     def __init__(self,
-                 sesion_repository: ISesionDeClaseRepository,
-                 asignatura_repository: IAsignaturaRepository):
-        self.sesion_repository = sesion_repository
-        self.asignatura_repository = asignatura_repository
-
-    async def execute(self, id_asignatura: uuid.UUID, id_horario: uuid.UUID, id_docente: uuid.UUID, tema: str | None) -> SesionDeClase:
+                 sesion_repo: ISesionDeClaseRepository,
+                 asignatura_repo: IAsignaturaRepository,
+                 clase_programada_repo: IClaseProgramadaRepository):
         """
-        Ejecuta el caso de uso.
+        Inicializa el caso de uso con sus dependencias (inyectadas).
+        """
+        self.sesion_repo = sesion_repo
+        self.asignatura_repo = asignatura_repo
+        self.clase_programada_repo = clase_programada_repo
 
-        1. Verifica que la asignatura exista y pertenezca al docente.
-        2. Verifica que la asignatura esté programada en ese horario.
-        3. Verifica que no haya otra sesión activa para esa clase/horario.
-        4. Crea y retorna la nueva sesión.
+    async def execute(self, docente_id: int, id_asignatura: int, id_horario: int, tema: str | None = None) -> tuple[SesionDeClase, ClaseProgramada]:
+        """
+        Ejecuta la lógica para abrir una sesión de clase.
+
+        1. Verifica que el docente sea dueño de la asignatura.
+        2. Verifica que la clase esté programada en ese horario.
+        3. Verifica que no haya una sesión activa para esa clase programada.
+        4. Crea y devuelve la nueva sesión de clase junto con la clase programada.
         """
 
-        # 1. Verificar Asignatura y pertenencia
-        asignatura = await self.asignatura_repository.get_by_id(id_asignatura)
-        if not asignatura:
-            raise NotFoundException("Asignatura", id_asignatura)
-        if asignatura.id_docente != id_docente:
-            raise UnauthorizedException("El docente no tiene permisos sobre esta asignatura.")
+        # 1. Verificar que el docente sea dueño de la asignatura
+        owns_asignatura = await self.asignatura_repo.docente_owns_asignatura(docente_id, id_asignatura)
+        if not owns_asignatura:
+            raise ForbiddenException(detail="El docente no es dueño de esta asignatura.")
 
-        # 2. Verifica que la asignatura esté programada en ese horario.
-        programada = await self.asignatura_repository.existe_clase_programada(id_asignatura, id_horario)
-        if not programada:
-            raise ValidationException(f"La asignatura '{asignatura.nombre_materia}' no está programada en el horario especificado.",
-                                      field="id_horario")
-
-        # 3. Verificar si ya hay una sesión activa
-        sesion_activa = await self.sesion_repository.find_activa(
-            id_clase=id_asignatura,
-            id_horario=id_horario
-        )
-        if sesion_activa:
-            raise ValidationException(
-                f"Ya existe una sesión activa (ID: {sesion_activa.id}) para esta clase.",
-                field="id_clase_programada"
+        # 2. Verificar que la clase esté programada en ese horario
+        clase_programada = await self.clase_programada_repo.get_by_asignatura_and_horario(id_asignatura, id_horario)
+        if not clase_programada:
+            raise NotFoundException(
+                resource="ClaseProgramada",
+                identifier=f"Asignatura ID: {id_asignatura}, Horario ID: {id_horario}"
             )
 
-        # 4. Crear la sesión
+        # 3. Verificar que no haya una sesión activa para esa clase programada
+        #    (Se asume que solo puede haber una sesión "EnProgreso" por clase programada a la vez)
+        sesion_activa_existente = await self.sesion_repo.find_activa(id_asignatura, id_horario)
+        if sesion_activa_existente:
+            raise ValidationException(
+                detail="Ya existe una sesión activa para esta clase programada.",
+                field="id_asignatura, id_horario"
+            )
+
+        # 4. Crear la nueva sesión de clase
         sesion_create = SesionDeClaseCreate(
             id_clase=id_asignatura,
             id_horario=id_horario,
             tema=tema
         )
-        nueva_sesion = await self.sesion_repository.create(sesion_create)
+        nueva_sesion = await self.sesion_repo.create(sesion_create)
 
-        return nueva_sesion
+        return nueva_sesion, clase_programada

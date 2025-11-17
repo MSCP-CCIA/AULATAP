@@ -2,7 +2,6 @@
 Define la entidad de negocio 'SesionDeClase'.
 """
 
-import uuid
 import enum
 from datetime import datetime
 from typing import Optional
@@ -17,8 +16,8 @@ class EstadoSesion(str, enum.Enum):
 
 class SesionDeClaseBase(BaseModel):
     """Modelo base para SesionDeClase."""
-    id_clase: uuid.UUID
-    id_horario: uuid.UUID
+    id_clase: int
+    id_horario: int
     hora_inicio: datetime
     hora_fin: Optional[datetime] = None
     estado: EstadoSesion = Field(default=EstadoSesion.EN_PROGRESO)
@@ -27,7 +26,7 @@ class SesionDeClaseBase(BaseModel):
 
 class SesionDeClase(SesionDeClaseBase):
     """Modelo completo de la entidad SesionDeClase."""
-    id: uuid.UUID
+    id: int
 
     class Config:
         from_attributes = True
@@ -35,8 +34,8 @@ class SesionDeClase(SesionDeClaseBase):
 
 class SesionDeClaseCreate(BaseModel):
     """Modelo para crear una nueva SesionDeClase."""
-    id_clase: uuid.UUID
-    id_horario: uuid.UUID
+    id_clase: int
+    id_horario: int
     tema: Optional[str] = Field(None, max_length=100, description="Tema de la sesión de clase")
 
 

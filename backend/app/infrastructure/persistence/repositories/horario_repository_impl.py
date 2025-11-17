@@ -3,7 +3,6 @@ Implementación Concreta del Repositorio de Horarios usando SQLAlchemy.
 """
 
 from typing import Optional, List
-import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,7 +16,7 @@ class HorarioRepositoryImpl(IHorarioRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_id(self, horario_id: uuid.UUID) -> Optional[Horario]:
+    async def get_by_id(self, horario_id: int) -> Optional[Horario]:
         result = await self.session.get(HorarioModel, horario_id)
         return Horario.model_validate(result) if result else None
 

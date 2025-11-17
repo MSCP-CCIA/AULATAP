@@ -11,8 +11,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import create_access_token, verify_password
+from app.core.dependencies import get_current_active_user
 from app.infrastructure.persistence.repositories.usuario_repository_impl import UsuarioRepositoryImpl
-from app.presentation.schemas.usuario_schemas import Token
+from app.presentation.schemas.usuario_schemas import Token, UsuarioPublic
 from app.domain.entities.usuario import Usuario
 
 router = APIRouter()
@@ -51,3 +52,13 @@ async def login_for_access_token(
         data={"sub": str(user.id)}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.get("/auth/me", response_model=UsuarioPublic, dependencies=[Depends(get_current_active_user)])
+async def read_users_me(
+    current_user: Usuario = Depends(get_current_active_user)
+):
+    """
+    Devuelve los datos del usuario actualmente autenticado.
+    """
+    return current_user

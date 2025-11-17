@@ -2,7 +2,6 @@
 Define la entidad de negocio 'Estudiante'.
 """
 
-import uuid
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -15,7 +14,7 @@ class EstudianteBase(BaseModel):
 
 class Estudiante(EstudianteBase):
     """Modelo completo de la entidad Estudiante."""
-    id: uuid.UUID
+    id: int
 
     class Config:
         from_attributes = True
@@ -28,7 +27,7 @@ class EstudianteCreate(EstudianteBase):
 
 class EstudiantePublic(EstudianteBase):
     """Modelo seguro para retornar al cliente."""
-    id: uuid.UUID
+    id: int
 
     class Config:
         from_attributes = True

@@ -54,6 +54,10 @@ class Settings(BaseSettings):
         return v
 
     # ==================== SECURITY SETTINGS ====================
+    API_KEY: str = Field(
+        default="aulatap-super-secret-key-for-dev",
+        description="Clave de API para proteger endpoints internos (como el del dispositivo 'Tap')"
+    )
     SECRET_KEY: str = Field(
         ...,  # Required
         min_length=32,

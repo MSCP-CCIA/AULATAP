@@ -2,10 +2,10 @@
 Implementación Concreta del Repositorio de Clases Programadas usando SQLAlchemy.
 """
 
-import uuid
 from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload # New import
 
 from app.domain.entities.clase_programada import ClaseProgramada, ClaseProgramadaCreate
 from app.domain.repositories.clase_programada_repository import IClaseProgramadaRepository
@@ -32,9 +32,12 @@ class ClaseProgramadaRepositoryImpl(IClaseProgramadaRepository):
             id_horario=db_clase_programada.id_horario
         )
 
-    async def get_by_asignatura_and_horario(self, id_asignatura: uuid.UUID, id_horario: uuid.UUID) -> Optional[ClaseProgramada]:
+    async def get_by_asignatura_and_horario(self, id_asignatura: int, id_horario: int) -> Optional[ClaseProgramada]:
         """Obtiene una clase programada por ID de asignatura y horario."""
-        stmt = select(ClaseProgramadaModel).where(
+        stmt = select(ClaseProgramadaModel).options(
+            joinedload(ClaseProgramadaModel.asignatura),
+            joinedload(ClaseProgramadaModel.horario)
+        ).where(
             ClaseProgramadaModel.id_clase == id_asignatura,
             ClaseProgramadaModel.id_horario == id_horario
         )

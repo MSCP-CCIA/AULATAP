@@ -4,7 +4,6 @@ Define la Interfaz (un contrato abstracto) para el Repositorio de Horarios.
 
 from abc import ABC, abstractmethod
 from typing import Optional, List
-import uuid
 from app.domain.entities.horario import Horario, HorarioCreate
 
 
@@ -12,7 +11,7 @@ class IHorarioRepository(ABC):
     """Interfaz abstracta para el repositorio de horarios."""
 
     @abstractmethod
-    async def get_by_id(self, horario_id: uuid.UUID) -> Optional[Horario]:
+    async def get_by_id(self, horario_id: int) -> Optional[Horario]:
         """Obtiene un horario por su ID."""
         pass
 
