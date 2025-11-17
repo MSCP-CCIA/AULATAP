@@ -9,6 +9,7 @@ from app.domain.entities.usuario import Usuario
 from app.application.use_cases.GetAsignaturasPorDocenteUseCase import GetAsignaturasPorDocenteUseCase
 from app.infrastructure.persistence.repositories.asignatura_repository_impl import AsignaturaRepositoryImpl
 from app.presentation.schemas.asignatura_schemas import AsignaturaPublic
+from app.presentation.schemas.usuario_schemas import UsuarioPublic # New import
 
 router = APIRouter()
 
@@ -34,4 +35,12 @@ async def get_mis_asignaturas(
     Requiere autenticación.
     """
     asignaturas = await use_case.execute(current_user.id)
-    return [AsignaturaPublic.model_validate(a) for a in asignaturas]
+    
+    # Explicitly set the docente field for each AsignaturaPublic
+    response_asignaturas = []
+    for asignatura in asignaturas:
+        asignatura_public = AsignaturaPublic.model_validate(asignatura)
+        asignatura_public.docente = UsuarioPublic.model_validate(current_user)
+        response_asignaturas.append(asignatura_public)
+    
+    return response_asignaturas

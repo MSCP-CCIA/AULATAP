@@ -15,7 +15,10 @@ from app.infrastructure.persistence.repositories.sesion_de_clase_repository_impl
 from app.infrastructure.persistence.repositories.asignatura_repository_impl import AsignaturaRepositoryImpl
 from app.infrastructure.persistence.repositories.clase_programada_repository_impl import ClaseProgramadaRepositoryImpl
 from app.presentation.schemas.sesion_de_clase_schemas import AbrirSesionRequest, SesionDeClasePublic
-from app.presentation.schemas.clase_programada_schemas import ClaseProgramadaPublic # New import
+from app.presentation.schemas.clase_programada_schemas import ClaseProgramadaPublic
+from app.presentation.schemas.asignatura_schemas import AsignaturaPublic # New import
+from app.presentation.schemas.horario_schemas import HorarioPublic # New import
+from app.presentation.schemas.usuario_schemas import UsuarioPublic # New import
 
 router = APIRouter()
 
@@ -66,14 +69,24 @@ async def abrir_sesion(
             tema=request.tema
         )
         await db.commit() # Commit the changes
-        # Construct SesionDeClasePublic with the associated ClaseProgramadaPublic
+
+        # Manually construct AsignaturaPublic with current_user as docente
+        asignatura_public_with_docente = AsignaturaPublic.model_validate(clase_programada.asignatura)
+        asignatura_public_with_docente.docente = UsuarioPublic.model_validate(current_user)
+
+        # Manually construct ClaseProgramadaPublic with the modified AsignaturaPublic
+        clase_programada_public = ClaseProgramadaPublic(
+            asignatura=asignatura_public_with_docente,
+            horario=HorarioPublic.model_validate(clase_programada.horario) # Assuming HorarioPublic can validate directly
+        )
+
         return SesionDeClasePublic(
             id=sesion.id,
             hora_inicio=sesion.hora_inicio,
             hora_fin=sesion.hora_fin,
             estado=sesion.estado,
             tema=sesion.tema,
-            clase_programada=ClaseProgramadaPublic.model_validate(clase_programada) # Validate ClaseProgramada
+            clase_programada=clase_programada_public
         )
     except NotFoundException as e:
         await db.rollback() # Rollback on exception
@@ -106,14 +119,24 @@ async def cerrar_sesion(
     try:
         sesion_cerrada, clase_programada = await use_case.execute(sesion_id=id_sesion, docente_id=current_user.id) # Unpack the tuple
         await db.commit() # Commit the changes
-        # Construct SesionDeClasePublic with the associated ClaseProgramadaPublic
+
+        # Manually construct AsignaturaPublic with current_user as docente
+        asignatura_public_with_docente = AsignaturaPublic.model_validate(clase_programada.asignatura)
+        asignatura_public_with_docente.docente = UsuarioPublic.model_validate(current_user)
+
+        # Manually construct ClaseProgramadaPublic with the modified AsignaturaPublic
+        clase_programada_public = ClaseProgramadaPublic(
+            asignatura=asignatura_public_with_docente,
+            horario=HorarioPublic.model_validate(clase_programada.horario) # Assuming HorarioPublic can validate directly
+        )
+
         return SesionDeClasePublic(
             id=sesion_cerrada.id,
             hora_inicio=sesion_cerrada.hora_inicio,
             hora_fin=sesion_cerrada.hora_fin,
             estado=sesion_cerrada.estado,
             tema=sesion_cerrada.tema,
-            clase_programada=ClaseProgramadaPublic.model_validate(clase_programada) # Validate ClaseProgramada
+            clase_programada=clase_programada_public
         )
     except NotFoundException as e:
         await db.rollback() # Rollback on exception
@@ -144,16 +167,28 @@ async def get_sesiones_abiertas(
     """
     try:
         sesiones_con_clase_programada = await use_case.execute(docente_id=current_user.id)
-        return [
-            SesionDeClasePublic(
-                id=sesion.id,
-                hora_inicio=sesion.hora_inicio,
-                hora_fin=sesion.hora_fin,
-                estado=sesion.estado,
-                tema=sesion.tema,
-                clase_programada=ClaseProgramadaPublic.model_validate(clase_programada)
+        response_sesiones = []
+        for sesion, clase_programada in sesiones_con_clase_programada:
+            # Manually construct AsignaturaPublic with current_user as docente
+            asignatura_public_with_docente = AsignaturaPublic.model_validate(clase_programada.asignatura)
+            asignatura_public_with_docente.docente = UsuarioPublic.model_validate(current_user)
+
+            # Manually construct ClaseProgramadaPublic with the modified AsignaturaPublic
+            clase_programada_public = ClaseProgramadaPublic(
+                asignatura=asignatura_public_with_docente,
+                horario=HorarioPublic.model_validate(clase_programada.horario) # Assuming HorarioPublic can validate directly
             )
-            for sesion, clase_programada in sesiones_con_clase_programada
-        ]
+
+            response_sesiones.append(
+                SesionDeClasePublic(
+                    id=sesion.id,
+                    hora_inicio=sesion.hora_inicio,
+                    hora_fin=sesion.hora_fin,
+                    estado=sesion.estado,
+                    tema=sesion.tema,
+                    clase_programada=clase_programada_public
+                )
+            )
+        return response_sesiones
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
