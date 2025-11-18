@@ -7,6 +7,7 @@ from datetime import datetime
 from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import or_
 
 from app.domain.entities.sesion_de_clase import SesionDeClase, SesionDeClaseCreate, SesionDeClaseUpdate, EstadoSesion
 from app.domain.repositories.sesion_de_clase_repository import ISesionDeClaseRepository
@@ -38,7 +39,11 @@ class SesionDeClaseRepositoryImpl(ISesionDeClaseRepository):
         ).where(
             SesionModel.id_clase == id_clase,
             SesionModel.id_horario == id_horario,
-            SesionModel.estado == EstadoSesion.EN_PROGRESO
+            or_(
+                SesionModel.estado == EstadoSesion.EN_PROGRESO,
+                SesionModel.estado == EstadoSesion.VALIDACION_ABIERTA,
+                SesionModel.estado == EstadoSesion.VALIDACION_CERRADA
+            )
         )
         result = await self.session.execute(stmt)
         db_sesion = result.scalars().first()
@@ -51,7 +56,11 @@ class SesionDeClaseRepositoryImpl(ISesionDeClaseRepository):
             selectinload(SesionModel.clase_programada).selectinload(ClaseProgramadaModel.horario)
         ).where(
             SesionModel.id_clase.in_(id_asignaturas),
-            SesionModel.estado == EstadoSesion.EN_PROGRESO
+            or_(
+                SesionModel.estado == EstadoSesion.EN_PROGRESO,
+                SesionModel.estado == EstadoSesion.VALIDACION_ABIERTA,
+                SesionModel.estado == EstadoSesion.VALIDACION_CERRADA
+            )
         )
         result = await self.session.execute(stmt)
         db_sesiones = result.scalars().all()

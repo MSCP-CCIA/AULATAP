@@ -32,7 +32,7 @@ class CerrarSesionUseCase:
         Ejecuta la lógica para cerrar una sesión de clase.
 
         1. Obtiene la sesión por su ID.
-        2. Verifica que la sesión exista y esté "EnProgreso".
+        2. Verifica que la sesión exista y esté en un estado válido para cerrar.
         3. Verifica que el docente autenticado sea el dueño de la asignatura asociada a la sesión.
         4. Actualiza el estado de la sesión a "Cerrada" y establece la hora de fin.
         5. Devuelve la sesión cerrada junto con la clase programada asociada.
@@ -43,9 +43,9 @@ class CerrarSesionUseCase:
         if not sesion:
             raise NotFoundException(resource="SesionDeClase", identifier=sesion_id)
 
-        # 2. Verificar que la sesión esté "EnProgreso"
-        if sesion.estado != EstadoSesion.EN_PROGRESO:
-            raise ValidationException(detail=f"La sesión {sesion_id} no está en progreso. Estado actual: {sesion.estado.value}")
+        # 2. Verificar que la sesión esté en un estado válido para cerrar
+        if sesion.estado not in [EstadoSesion.EN_PROGRESO, EstadoSesion.VALIDACION_ABIERTA, EstadoSesion.VALIDACION_CERRADA]:
+            raise ValidationException(detail=f"La sesión {sesion_id} no está en un estado válido para cerrar. Estado actual: {sesion.estado.value}")
 
         # 3. Verificar que el docente sea dueño de la asignatura asociada a la sesión
         # Necesitamos obtener la clase programada para obtener el id_asignatura
