@@ -66,6 +66,19 @@ class SesionDeClaseRepositoryImpl(ISesionDeClaseRepository):
         db_sesiones = result.scalars().all()
         return [SesionDeClase.model_validate(s) for s in db_sesiones]
 
+    async def find_validation_open_by_asignaturas(self, id_asignaturas: List[int]) -> List[SesionDeClase]:
+        """Busca sesiones con validación abierta para una lista de asignaturas."""
+        stmt = select(SesionModel).options(
+            selectinload(SesionModel.clase_programada).selectinload(ClaseProgramadaModel.asignatura).selectinload(AsignaturaModel.docente),
+            selectinload(SesionModel.clase_programada).selectinload(ClaseProgramadaModel.horario)
+        ).where(
+            SesionModel.id_clase.in_(id_asignaturas),
+            SesionModel.estado == EstadoSesion.VALIDACION_ABIERTA
+        )
+        result = await self.session.execute(stmt)
+        db_sesiones = result.scalars().all()
+        return [SesionDeClase.model_validate(s) for s in db_sesiones]
+
     async def create(self, sesion_create: SesionDeClaseCreate) -> SesionDeClase:
         db_sesion = SesionModel(
             id_clase=sesion_create.id_clase,

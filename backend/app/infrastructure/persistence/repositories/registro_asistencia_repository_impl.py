@@ -39,6 +39,7 @@ class RegistroAsistenciaRepositoryImpl(IRegistroAsistenciaRepository):
             estado_asistencia=registro_create.estado_asistencia
         )
         self.session.add(db_registro)
+        await self.session.commit()
         await self.session.flush()
         await self.session.refresh(db_registro)
         return RegistroAsistencia.model_validate(db_registro)

@@ -26,6 +26,11 @@ class ISesionDeClaseRepository(ABC):
         pass
 
     @abstractmethod
+    async def find_validation_open_by_asignaturas(self, id_asignaturas: List[int]) -> List[SesionDeClase]:
+        """Busca sesiones con validación abierta para una lista de asignaturas."""
+        pass
+
+    @abstractmethod
     async def create(self, sesion_create: SesionDeClaseCreate) -> SesionDeClase:
         """Inicia una nueva sesión de clase."""
         pass
