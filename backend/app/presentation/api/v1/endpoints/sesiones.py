@@ -14,6 +14,8 @@ from app.application.use_cases.GetSesionesActivasPorDocenteUseCase import GetSes
 from app.infrastructure.persistence.repositories.sesion_de_clase_repository_impl import SesionDeClaseRepositoryImpl
 from app.infrastructure.persistence.repositories.asignatura_repository_impl import AsignaturaRepositoryImpl
 from app.infrastructure.persistence.repositories.clase_programada_repository_impl import ClaseProgramadaRepositoryImpl
+from app.infrastructure.persistence.repositories.inscripcion_repository_impl import InscripcionRepositoryImpl # New import
+from app.infrastructure.persistence.repositories.registro_asistencia_repository_impl import RegistroAsistenciaRepositoryImpl # New import
 from app.presentation.schemas.sesion_de_clase_schemas import AbrirSesionRequest, SesionDeClasePublic
 from app.presentation.schemas.clase_programada_schemas import ClaseProgramadaPublic
 from app.presentation.schemas.asignatura_schemas import AsignaturaPublic # New import
@@ -34,7 +36,9 @@ def get_cerrar_sesion_use_case(db: AsyncSession = Depends(get_db)) -> CerrarSesi
     sesion_repo = SesionDeClaseRepositoryImpl(db)
     asignatura_repo = AsignaturaRepositoryImpl(db)
     clase_programada_repo = ClaseProgramadaRepositoryImpl(db)
-    return CerrarSesionUseCase(sesion_repo, asignatura_repo, clase_programada_repo)
+    inscripcion_repo = InscripcionRepositoryImpl(db) # New
+    registro_asistencia_repo = RegistroAsistenciaRepositoryImpl(db) # New
+    return CerrarSesionUseCase(sesion_repo, asignatura_repo, clase_programada_repo, inscripcion_repo, registro_asistencia_repo) # Updated
 
 
 def get_sesiones_activas_por_docente_use_case(db: AsyncSession = Depends(get_db)) -> GetSesionesActivasPorDocenteUseCase:

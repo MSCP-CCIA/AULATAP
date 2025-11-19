@@ -46,25 +46,31 @@ class CerrarValidacionUseCase:
         if not updated_sesion:
             raise NotFoundException("SesionDeClase", id_sesion)
 
-        # 2. Obtener todos los estudiantes inscritos en la asignatura
-        id_asignatura = sesion.id_clase
+        # 2. Obtener todos los estudiantes inscritos en la asignatura de la sesión
+        # id_clase de SesionDeClase es en realidad id_asignatura de ClaseProgramada
+        id_asignatura = clase_programada.id_clase  # Corrected: use id_clase which is id_asignatura
         inscripciones = await self.inscripcion_repository.find_by_asignatura(id_asignatura)
-        estudiantes_inscritos_ids = {insc.id_estudiante for insc in inscripciones}
 
-        # 3. Obtener todos los estudiantes que SÍ registraron asistencia
-        registros_presentes = await self.registro_asistencia_repository.list_by_sesion(id_sesion)
-        estudiantes_presentes_ids = {reg.id_estudiante for reg in registros_presentes}
+        # 3. Procesar cada estudiante inscrito
+        for inscripcion in inscripciones:
+            estudiante_id = inscripcion.id_estudiante
+            registro_asistencia = await self.registro_asistencia_repository.get_by_sesion_and_estudiante(id_sesion, estudiante_id)
 
-        # 4. Determinar estudiantes ausentes
-        estudiantes_ausentes_ids = estudiantes_inscritos_ids - estudiantes_presentes_ids
-
-        # 5. Crear registro de 'Ausente' para cada uno
-        for id_estudiante in estudiantes_ausentes_ids:
-            create_payload = RegistroAsistenciaCreate(
-                id_sesion_clase=id_sesion,
-                id_estudiante=id_estudiante,
-                estado_asistencia=EstadoAsistencia.AUSENTE
-            )
-            await self.registro_asistencia_repository.create(create_payload)
+            if not registro_asistencia:
+                # Si no hay registro, crear uno como Ausente
+                create_payload = RegistroAsistenciaCreate(
+                    id_sesion_clase=id_sesion,
+                    id_estudiante=estudiante_id,
+                    estado_asistencia=EstadoAsistencia.AUSENTE
+                )
+                await self.registro_asistencia_repository.create(create_payload)
+            elif registro_asistencia.estado_asistencia not in [EstadoAsistencia.PRESENTE, EstadoAsistencia.TARDE]:
+                # Si existe, pero no es Presente o Tarde, asegurar que sea Ausente
+                update_registro_payload = RegistroAsistenciaCreate(
+                    id_sesion_clase=id_sesion,
+                    id_estudiante=estudiante_id,
+                    estado_asistencia=EstadoAsistencia.AUSENTE
+                )
+                await self.registro_asistencia_repository.update(registro_asistencia.id, update_registro_payload)
 
         return updated_sesion, clase_programada
