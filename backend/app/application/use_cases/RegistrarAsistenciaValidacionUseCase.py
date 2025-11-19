@@ -46,6 +46,10 @@ class RegistrarAsistenciaValidacionUseCase:
         # 4. Obtener o crear el registro de asistencia del estudiante para esta sesión
         registro_asistencia = await self.registro_asistencia_repository.get_by_sesion_and_estudiante(id_sesion, estudiante.id)
         
+        # New check: Prevent re-validation if hora_salida already exists
+        if registro_asistencia and registro_asistencia.hora_salida:
+            raise ValidationException("El estudiante ya ha validado su salida para esta sesión.")
+
         hora_actual = datetime.utcnow()
         estado_asistencia_actual = registro_asistencia.estado_asistencia if registro_asistencia else EstadoAsistencia.AUSENTE
 
@@ -71,8 +75,8 @@ class RegistrarAsistenciaValidacionUseCase:
             create_payload = RegistroAsistenciaCreate(
                 id_sesion_clase=id_sesion,
                 id_estudiante=estudiante.id,
-                hora_registro=hora_actual,  # Set hora_registro to current time
-                estado_asistencia=target_estado  # Set initial state based on rules
+                hora_registro=hora_actual, # Set hora_registro to current time
+                estado_asistencia=target_estado # Set initial state based on rules
             )
             updated_registro = await self.registro_asistencia_repository.create(create_payload)
         
