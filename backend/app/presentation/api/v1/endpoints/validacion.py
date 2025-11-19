@@ -104,7 +104,7 @@ async def abrir_validacion(
         await db.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
-@router.post("/{id_sesion}/registrar-asistencia", response_model=RegistroAsistenciaPublic, summary="Registrar la asistencia de un estudiante")
+@router.post("/{id_sesion}/validar-asistencia", response_model=RegistroAsistenciaPublic, summary="Validar la asistencia de un estudiante")
 async def registrar_asistencia(
     id_sesion: int,
     request: RegistrarAsistenciaRequest,
@@ -118,7 +118,7 @@ async def registrar_asistencia(
         registro, estudiante, clase_programada, sesion = await use_case.execute(id_sesion, request.codigo_rfid)
         await db.commit()
 
-        estudiante_info = EstudianteInfo(nombre_completo=f"{estudiante.nombre} {estudiante.apellido}")
+        estudiante_info = EstudianteInfo(nombre_completo=f"{estudiante.nombre_completo}")
         asignatura_info = AsignaturaInfo(
             nombre_materia=clase_programada.asignatura.nombre_materia,
             grupo=clase_programada.asignatura.grupo

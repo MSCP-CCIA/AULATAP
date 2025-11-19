@@ -38,7 +38,7 @@ class RegistrarAsistenciaValidacionUseCase:
 
         # 3. Obtener la ClaseProgramada para obtener la Asignatura
         clase_programada = await self.clase_programada_repository.get_by_asignatura_and_horario(
-            sesion.id_clase, sesion.id_horario # Corrected method call and parameters
+            sesion.id_clase, sesion.id_horario
         )
         if not clase_programada:
             raise NotFoundException("Clase Programada", f"Asignatura ID {sesion.id_clase}, Horario ID {sesion.id_horario} para Sesión {id_sesion}")
@@ -49,28 +49,31 @@ class RegistrarAsistenciaValidacionUseCase:
         hora_actual = datetime.utcnow()
         estado_asistencia_actual = registro_asistencia.estado_asistencia if registro_asistencia else EstadoAsistencia.AUSENTE
 
-        update_payload = RegistroAsistenciaUpdate(hora_salida=hora_actual)
-
         # Aplicar reglas de negocio para el estado
         if estado_asistencia_actual == EstadoAsistencia.PRESENTE:
-            update_payload.estado_asistencia = EstadoAsistencia.PRESENTE
+            target_estado = EstadoAsistencia.PRESENTE
         elif estado_asistencia_actual == EstadoAsistencia.TARDE:
-            update_payload.estado_asistencia = EstadoAsistencia.TARDE
+            target_estado = EstadoAsistencia.TARDE
         elif estado_asistencia_actual == EstadoAsistencia.AUSENTE:
-            update_payload.estado_asistencia = EstadoAsistencia.TARDE
+            target_estado = EstadoAsistencia.TARDE
         else:
             raise ValidationException(f"Estado de asistencia desconocido: {estado_asistencia_actual}")
 
         if registro_asistencia:
+            # Si el registro existe, actualizar su estado y hora_salida
+            update_payload = RegistroAsistenciaUpdate(
+                hora_salida=hora_actual,
+                estado_asistencia=target_estado
+            )
             updated_registro = await self.registro_asistencia_repository.update(registro_asistencia.id, update_payload)
         else:
+            # Si no existe, crear uno. Asumimos que es un "tap" de entrada tardía o validación inicial
             create_payload = RegistroAsistenciaCreate(
                 id_sesion_clase=id_sesion,
                 id_estudiante=estudiante.id,
-                hora_registro=None,
-                estado_asistencia=EstadoAsistencia.TARDE
+                hora_registro=hora_actual,  # Set hora_registro to current time
+                estado_asistencia=target_estado  # Set initial state based on rules
             )
-            new_registro = await self.registro_asistencia_repository.create(create_payload)
-            updated_registro = await self.registro_asistencia_repository.update(new_registro.id, update_payload)
+            updated_registro = await self.registro_asistencia_repository.create(create_payload)
         
         return updated_registro, estudiante, clase_programada, sesion
